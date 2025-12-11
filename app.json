@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "00movie-app",
-    "slug": "00movie-app",
+    "name": "movie-app",
+    "slug": "movie-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "00movieapp",
+    "scheme": "movies",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
