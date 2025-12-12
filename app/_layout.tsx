@@ -1,22 +1,19 @@
+import GlobalProvider from "@/context/GlobalProvider";
 import { Stack } from "expo-router";
-import "./globals.css";
 import { StatusBar } from "react-native";
+import "./globals.css";
 
 export default function RootLayout() {
-  return <>
-    <StatusBar hidden={true} />
-    
-    <Stack>
-      <Stack.Screen
-        name="(tabs)"
-        options={{ headerShown: false }}
-      />
+  return (
+    <GlobalProvider>
+      <StatusBar hidden={true} />
 
-      <Stack.Screen
-        name="movies/[id]"
-        options={{ headerShown: false }}
-      />
-
-    </Stack>
-  </>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="movies/[id]" options={{ headerShown: false }} />
+      </Stack>
+    </GlobalProvider>
+  );
 }

@@ -1,13 +1,92 @@
-import { Client, Databases, ID, Query } from 'react-native-appwrite';
-// track the searches made by a user
+import { Account, Avatars, Client, Databases, ID, Query } from 'react-native-appwrite';
+
 const DATABASE_ID = process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!;
 const COLLECTION_ID = process.env.EXPO_PUBLIC_APPWRITE_COLLECTION_ID!;
+const USER_COLLECTION_ID = process.env.EXPO_PUBLIC_APPWRITE_USER_COLLECTION_ID || 'users';
 
 const client = new Client()
   .setEndpoint('https://cloud.appwrite.io/v1')
   .setProject(process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID!)
 
 const database = new Databases(client)
+const account = new Account(client)
+const avatars = new Avatars(client)
+
+export const createUser = async (email: string, password: string, username: string) => {
+  try {
+    const newAccount = await account.create(ID.unique(), email, password, username);
+
+    if (!newAccount) throw Error;
+
+    const avatarUrl = avatars.getInitials(username);
+
+    await signIn(email, password);
+
+    const newUser = await database.createDocument(
+      DATABASE_ID,
+      USER_COLLECTION_ID,
+      ID.unique(),
+      {
+        accountId: newAccount.$id,
+        email,
+        username,
+        avatar: avatarUrl,
+      }
+    );
+
+    return newUser;
+  } catch (error) {
+    console.log(error);
+    throw new Error(error as string);
+  }
+}
+
+export const signIn = async (email: string, password: string) => {
+  try {
+    // Check if a session already exists
+    try {
+      const session = await account.getSession('current');
+      if (session) return session;
+    } catch (error) {
+      // No active session, proceed to create one
+    }
+
+    const session = await account.createEmailPasswordSession(email, password);
+    return session;
+  } catch (error) {
+    throw new Error(error as string);
+  }
+}
+
+export const getCurrentUser = async () => {
+  try {
+    const currentAccount = await account.get();
+
+    if (!currentAccount) throw Error;
+
+    const currentUser = await database.listDocuments(
+      DATABASE_ID,
+      USER_COLLECTION_ID,
+      [Query.equal('accountId', currentAccount.$id)]
+    );
+
+    if (!currentUser) throw Error;
+
+    return currentUser.documents[0];
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+}
+
+export const signOut = async () => {
+  try {
+    const session = await account.deleteSession('current');
+    return session;
+  } catch (error) {
+    throw new Error(error as string);
+  }
+}
 
 export const updateSearchCount = async (query: string, movie: Movie) => {
   try {
