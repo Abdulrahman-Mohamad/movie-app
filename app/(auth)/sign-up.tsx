@@ -1,6 +1,6 @@
 import { Link, router } from "expo-router";
 import { useState } from "react";
-import { Alert, Dimensions, Image, ScrollView, Text, View } from "react-native";
+import { Dimensions, Image, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import CustomButton from "@/components/CustomButton";
@@ -18,10 +18,44 @@ const SignUp = () => {
         email: "",
         password: "",
     });
+    const [errors, setErrors] = useState({
+        username: "",
+        email: "",
+        password: "",
+    });
+    const [authError, setAuthError] = useState("");
+
+    const validateField = (field: string, value: string) => {
+        let errorMessage = "";
+        if (field === "username") {
+            if (!value) {
+                errorMessage = "Username is required";
+            }
+        } else if (field === "email") {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!value) {
+                errorMessage = "Email is required";
+            } else if (!emailRegex.test(value)) {
+                errorMessage = "Invalid email address";
+            }
+        } else if (field === "password") {
+            if (!value) {
+                errorMessage = "Password is required";
+            } else if (value.length < 8) {
+                errorMessage = "Password must be at least 8 characters";
+            }
+        }
+        setErrors((prev) => ({ ...prev, [field]: errorMessage }));
+    };
 
     const submit = async () => {
+        setAuthError("");
         if (form.username === "" || form.email === "" || form.password === "") {
-            Alert.alert("Error", "Please fill in all fields");
+            setErrors({
+                username: form.username ? "" : "Username is required",
+                email: form.email ? "" : "Email is required",
+                password: form.password ? "" : "Password is required",
+            });
             return;
         }
 
@@ -33,7 +67,15 @@ const SignUp = () => {
 
             router.replace("/(tabs)");
         } catch (error) {
-            Alert.alert("Error", (error as Error).message);
+            console.log((error as Error).message);
+            const errorMessage = (error as Error).message;
+            if (errorMessage.includes("already exists")) {
+                setAuthError("A user with this email or username already exists.");
+            } else if (errorMessage.includes("Network request failed")) {
+                setAuthError("Please check your internet connection.");
+            } else {
+                setAuthError("Failed to create account. Please try again.");
+            }
         } finally {
             setSubmitting(false);
         }
@@ -61,24 +103,43 @@ const SignUp = () => {
                     <FormField
                         title="Username"
                         value={form.username}
-                        handleChangeText={(e) => setForm({ ...form, username: e })}
+                        handleChangeText={(e) => {
+                            setForm({ ...form, username: e });
+                            if (errors.username) validateField("username", e);
+                        }}
                         otherStyles="mt-10"
+                        onBlur={() => validateField("username", form.username)}
+                        error={errors.username}
                     />
 
                     <FormField
                         title="Email"
                         value={form.email}
-                        handleChangeText={(e) => setForm({ ...form, email: e })}
+                        handleChangeText={(e) => {
+                            setForm({ ...form, email: e });
+                            if (errors.email) validateField("email", e);
+                        }}
                         otherStyles="mt-7"
                         keyboardType="email-address"
+                        onBlur={() => validateField("email", form.email)}
+                        error={errors.email}
                     />
 
                     <FormField
                         title="Password"
                         value={form.password}
-                        handleChangeText={(e) => setForm({ ...form, password: e })}
+                        handleChangeText={(e) => {
+                            setForm({ ...form, password: e });
+                            if (errors.password) validateField("password", e);
+                        }}
                         otherStyles="mt-7"
+                        onBlur={() => validateField("password", form.password)}
+                        error={errors.password}
                     />
+
+                    {authError ? (
+                        <Text className="text-red-500 text-center mt-4 font-pmedium">{authError}</Text>
+                    ) : null}
 
                     <CustomButton
                         title="Sign Up"
