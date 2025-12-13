@@ -1,9 +1,11 @@
 import { icons } from '@/constants/icons';
+import { useGlobalContext } from '@/context/GlobalProvider';
 import { fetchMovieDetails } from '@/services/api';
+import { checkIfSaved, deleteSavedMovie, saveMovie } from '@/services/appwrite';
 import useFetch from '@/services/useFetch';
 import { router, useLocalSearchParams } from 'expo-router';
-import React from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 interface MovieInfoProps {
   label: string;
@@ -19,8 +21,60 @@ const MovieInfo = ({ label, value }: MovieInfoProps) => (
 
 const Details = () => {
   const { id } = useLocalSearchParams();
+  const { user } = useGlobalContext();
+  const [isSaved, setIsSaved] = useState(false);
+  const [savedDocId, setSavedDocId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const { data: movie } = useFetch(() => fetchMovieDetails(id as string))
+  const { data: movie } = useFetch(() => fetchMovieDetails(id as string));
+
+  useEffect(() => {
+    const checkSavedStatus = async () => {
+      if (user && movie) {
+        const savedMovie = await checkIfSaved(user.accountId, movie.id);
+        if (savedMovie) {
+          setIsSaved(true);
+          setSavedDocId(savedMovie.$id);
+        } else {
+          setIsSaved(false);
+          setSavedDocId(null);
+        }
+      }
+    };
+
+    checkSavedStatus();
+  }, [user, movie]);
+
+  const toggleSave = async () => {
+    console.log("Attempting to save. User:", user, "Movie:", movie, "isSaving:", isSaving);
+
+    if (!user) {
+      Alert.alert("Error", "You must be logged in to save movies.");
+      return;
+    }
+    if (!movie || isSaving) return;
+
+    setIsSaving(true);
+    try {
+      if (isSaved && savedDocId) {
+        await deleteSavedMovie(savedDocId);
+        setIsSaved(false);
+        setSavedDocId(null);
+        Alert.alert("Success", "Movie removed from saved list");
+      } else {
+        const result = await saveMovie(user.accountId, movie);
+        setIsSaved(true);
+        setSavedDocId(result.$id);
+        Alert.alert("Success", "Movie saved successfully");
+      }
+    } catch (error: any) {
+      console.log(error);
+      Alert.alert("Error", error.message || "Failed to save movie");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <View className='bg-primary flex-1'>
       <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
@@ -32,7 +86,17 @@ const Details = () => {
           />
         </View>
         <View className='flex-col justify-center mt-5 px-5 '>
-          <Text className='text-white text-xl font-bold'>{movie?.title}</Text>
+          <View className='flex-row justify-between items-center'>
+            <Text className='text-white text-xl font-bold flex-1'>{movie?.title}</Text>
+            <TouchableOpacity onPress={toggleSave} disabled={isSaving}>
+              <Image
+                source={icons.save}
+                className='size-6'
+                tintColor={isSaved ? '#AB8BFF' : '#fff'}
+              />
+            </TouchableOpacity>
+          </View>
+
           <View className='flex-row items-center gap-x-1 mt-2'>
             <Text className='text-light-200 text-sm'>{movie?.release_date?.split('-')[0]}</Text>
             <Text className='text-light-200 text-sm'>{movie?.runtime}m</Text>

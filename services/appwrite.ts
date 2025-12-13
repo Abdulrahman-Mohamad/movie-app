@@ -3,6 +3,7 @@ import { Account, Avatars, Client, Databases, ID, Query } from 'react-native-app
 const DATABASE_ID = process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!;
 const COLLECTION_ID = process.env.EXPO_PUBLIC_APPWRITE_COLLECTION_ID!;
 const USER_COLLECTION_ID = process.env.EXPO_PUBLIC_APPWRITE_USER_COLLECTION_ID || 'users';
+const SAVED_MOVIES_COLLECTION_ID = process.env.EXPO_PUBLIC_APPWRITE_SAVED_MOVIES_COLLECTION_ID || 'saved_movies';
 
 const client = new Client()
   .setEndpoint('https://cloud.appwrite.io/v1')
@@ -30,7 +31,7 @@ export const createUser = async (email: string, password: string, username: stri
         accountId: newAccount.$id,
         email,
         username,
-        avatar: avatarUrl,
+        avatar: String(avatarUrl),
       }
     );
 
@@ -146,5 +147,75 @@ export const getTrendingMovies = async (): Promise<TrendingMovie[] | undefined> 
     console.log(error);
     return undefined
 
+  }
+}
+
+export const saveMovie = async (userId: string, movie: MovieDetails) => {
+  try {
+    const savedMovie = await database.createDocument(
+      DATABASE_ID,
+      SAVED_MOVIES_COLLECTION_ID,
+      ID.unique(),
+      {
+        user_id: userId,
+        movie_id: movie.id,
+        title: movie.title,
+        poster_path: movie.poster_path,
+        vote_average: movie.vote_average,
+        release_date: movie.release_date,
+      }
+    );
+    return savedMovie;
+  } catch (error) {
+    console.log("Error saving movie:", error);
+    throw new Error(error as string);
+  }
+}
+
+export const deleteSavedMovie = async (documentId: string) => {
+  try {
+    await database.deleteDocument(
+      DATABASE_ID,
+      SAVED_MOVIES_COLLECTION_ID,
+      documentId
+    );
+  } catch (error) {
+    console.log(error);
+    throw new Error(error as string);
+  }
+}
+
+export const getSavedMovies = async (userId: string) => {
+  try {
+    const result = await database.listDocuments(
+      DATABASE_ID,
+      SAVED_MOVIES_COLLECTION_ID,
+      [Query.equal('user_id', userId)]
+    );
+    return result.documents;
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
+}
+
+export const checkIfSaved = async (userId: string, movieId: number) => {
+  try {
+    const result = await database.listDocuments(
+      DATABASE_ID,
+      SAVED_MOVIES_COLLECTION_ID,
+      [
+        Query.equal('user_id', userId),
+        Query.equal('movie_id', movieId)
+      ]
+    );
+
+    if (result.documents.length > 0) {
+      return result.documents[0];
+    }
+    return null;
+  } catch (error) {
+    console.log(error);
+    return null;
   }
 }

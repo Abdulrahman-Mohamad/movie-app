@@ -28,6 +28,8 @@ const SignIn = () => {
         try {
             await signIn(form.email, form.password);
             const result = await getCurrentUser();
+            if (!result) throw new Error("Failed to get user data. Please check your internet connection or database permissions.");
+
             setUser(result as unknown as User);
             setIsLogged(true);
 
