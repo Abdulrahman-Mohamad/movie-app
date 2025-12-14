@@ -1,4 +1,4 @@
-import { Redirect, router } from "expo-router";
+import { Link, Redirect, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Image, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -29,13 +29,13 @@ export default function App() {
                     <View className="relative mt-5">
                         <Text className="text-3xl text-white font-bold text-center">
                             Discover Endless{"\n"}
-                            Movies with <Text className="text-secondary-200">Aora</Text>
+                            Movies with <Text className="text-secondary-200">Movira</Text>
                         </Text>
                     </View>
 
                     <Text className="text-sm font-pregular text-gray-100 mt-7 text-center">
                         Where Creativity Meets Innovation: Embark on a Journey of Limitless
-                        Exploration with Aora
+                        Exploration with Movira
                     </Text>
 
                     <CustomButton
@@ -43,6 +43,8 @@ export default function App() {
                         handlePress={() => router.push("/sign-in")}
                         containerStyles="w-full mt-7"
                     />
+
+                    <Text className="mt-20">This app Developed by <Link className="text-blue-700 font-semibold" href={"https://portfolio-zeta-three.vercel.app/"} target="_blank">Abdulrahman Mohamed</Link></Text>
                 </View>
             </ScrollView>
 
