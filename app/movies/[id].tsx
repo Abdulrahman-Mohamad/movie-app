@@ -60,12 +60,12 @@ const Details = () => {
         await deleteSavedMovie(savedDocId);
         setIsSaved(false);
         setSavedDocId(null);
-        Alert.alert("Success", "Movie removed from saved list");
+
       } else {
         const result = await saveMovie(user.accountId, movie);
         setIsSaved(true);
         setSavedDocId(result.$id);
-        Alert.alert("Success", "Movie saved successfully");
+
       }
     } catch (error: any) {
       console.log(error);

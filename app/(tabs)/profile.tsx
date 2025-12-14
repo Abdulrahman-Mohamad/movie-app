@@ -126,7 +126,7 @@ const Profile = () => {
                 avatar: updatedUser.avatar,
             });
             setIsEditing(false);
-            Alert.alert("Success", "Profile updated successfully");
+
         } catch (error) {
             Alert.alert("Error", "Failed to update profile");
             console.log(error);
@@ -229,10 +229,10 @@ const Profile = () => {
                                 title="Username"
                                 value={form.username}
                                 handleChangeText={(e) => setForm({ ...form, username: e })}
-                                otherStyles="mt-4"
+                                otherStyles="mt-2"
                             />
 
-                            <View className="space-y-2 mt-4">
+                            <View className="space-y-2 mt-3">
                                 <Text className="text-base text-gray-100 font-pmedium">Email</Text>
                                 <View className="w-full h-16 px-4 bg-[#1C1C1E] rounded-2xl border-2 border-black-200 flex flex-row items-center opacity-50">
                                     <Text className="text-gray-400 font-psemibold text-base flex-1">
@@ -241,7 +241,7 @@ const Profile = () => {
                                 </View>
                             </View>
 
-                            <View className="space-y-2 mt-4">
+                            <View className="space-y-2 mt-3">
                                 <Text className="text-base text-gray-100 font-pmedium">Country</Text>
                                 <TouchableOpacity
                                     onPress={() => setShowCountryPicker(true)}
@@ -257,7 +257,7 @@ const Profile = () => {
                                 title="Phone Number"
                                 value={form.phone}
                                 handleChangeText={(e) => setForm({ ...form, phone: e })}
-                                otherStyles="mt-4"
+                                otherStyles="mt-3"
                                 keyboardType="phone-pad"
                                 prefix={countryCode}
                             />
@@ -266,12 +266,12 @@ const Profile = () => {
                                 title="Bio"
                                 value={form.bio}
                                 handleChangeText={(e) => setForm({ ...form, bio: e })}
-                                otherStyles="mt-4"
+                                otherStyles="mt-3"
                                 multiline
                                 numberOfLines={4}
                             />
 
-                            <View className="flex-row gap-4 mt-10">
+                            <View className="flex-row gap-4 mt-6">
                                 <CustomButton
                                     title="Cancel"
                                     handlePress={() => setIsEditing(false)}
