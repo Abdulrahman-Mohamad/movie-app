@@ -18,15 +18,19 @@ const FormField = ({
     handleChangeText,
     otherStyles,
     error,
+    prefix,
     ...props
-}: FormFieldProps & { error?: string }) => {
-    const [showPassword, setShowPassword] = useState(false);
+}: FormFieldProps & { error?: string; prefix?: string }) => {
+    const [showPassword] = useState(false);
 
     return (
         <View className={`space-y-2 ${otherStyles}`}>
             <Text className="text-base text-gray-100 font-medium font-pmedium">{title}</Text>
 
-            <View className={`w-full h-16 px-4 bg-black-100 rounded-2xl border-2 flex flex-row items-center ${error ? 'border-red-500' : 'border-black-200 focus:border-secondary'}`}>
+            <View className={`w-full h-16 px-4 bg-[#1C1C1E] rounded-2xl border-2 flex flex-row items-center ${error ? 'border-red-500' : 'border-black-200 focus:border-secondary'}`}>
+                {prefix && (
+                    <Text className="text-white font-psemibold text-base mr-2">{prefix}</Text>
+                )}
                 <TextInput
                     className="flex-1 text-white font-psemibold text-base"
                     value={value}

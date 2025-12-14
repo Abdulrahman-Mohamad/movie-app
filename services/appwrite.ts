@@ -13,7 +13,7 @@ const database = new Databases(client)
 const account = new Account(client)
 const avatars = new Avatars(client)
 
-export const createUser = async (email: string, password: string, username: string) => {
+export const createUser = async (email: string, password: string, username: string, phone: string, country: string) => {
   try {
     const newAccount = await account.create(ID.unique(), email, password, username);
 
@@ -32,6 +32,8 @@ export const createUser = async (email: string, password: string, username: stri
         email,
         username,
         avatar: String(avatarUrl),
+        phone,
+        country
       }
     );
 
@@ -48,6 +50,7 @@ export const signIn = async (email: string, password: string) => {
     try {
       const session = await account.getSession('current');
       if (session) return session;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       // No active session, proceed to create one
     }

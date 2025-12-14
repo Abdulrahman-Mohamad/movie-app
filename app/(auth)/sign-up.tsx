@@ -1,10 +1,12 @@
 import { Link, router } from "expo-router";
 import { useState } from "react";
-import { Dimensions, Image, ScrollView, Text, View } from "react-native";
+import { Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import CountryPicker from "@/components/CountryPicker";
 import CustomButton from "@/components/CustomButton";
 import FormField from "@/components/FormField";
+import { countries } from "@/constants/countries";
 import { icons } from "@/constants/icons";
 import { useGlobalContext } from "@/context/GlobalProvider";
 import { createUser } from "@/services/appwrite";
@@ -13,15 +15,21 @@ const SignUp = () => {
     const { setUser, setIsLogged } = useGlobalContext();
 
     const [isSubmitting, setSubmitting] = useState(false);
+    const [showCountryPicker, setShowCountryPicker] = useState(false);
+    const [countryCode, setCountryCode] = useState("");
     const [form, setForm] = useState({
         username: "",
         email: "",
         password: "",
+        phone: "",
+        country: "",
     });
     const [errors, setErrors] = useState({
         username: "",
         email: "",
         password: "",
+        phone: "",
+        country: "",
     });
     const [authError, setAuthError] = useState("");
 
@@ -44,24 +52,35 @@ const SignUp = () => {
             } else if (value.length < 8) {
                 errorMessage = "Password must be at least 8 characters";
             }
+        } else if (field === "phone") {
+            if (!value) {
+                errorMessage = "Phone number is required";
+            }
+        } else if (field === "country") {
+            if (!value) {
+                errorMessage = "Country is required";
+            }
         }
         setErrors((prev) => ({ ...prev, [field]: errorMessage }));
     };
 
     const submit = async () => {
         setAuthError("");
-        if (form.username === "" || form.email === "" || form.password === "") {
+        if (form.username === "" || form.email === "" || form.password === "" || form.phone === "" || form.country === "") {
             setErrors({
                 username: form.username ? "" : "Username is required",
                 email: form.email ? "" : "Email is required",
                 password: form.password ? "" : "Password is required",
+                phone: form.phone ? "" : "Phone number is required",
+                country: form.country ? "" : "Country is required",
             });
             return;
         }
 
         setSubmitting(true);
         try {
-            const result = await createUser(form.email, form.password, form.username);
+            const fullPhone = `${countryCode}${form.phone}`;
+            const result = await createUser(form.email, form.password, form.username, fullPhone, form.country);
             setUser(result as unknown as User);
             setIsLogged(true);
 
@@ -79,6 +98,12 @@ const SignUp = () => {
         } finally {
             setSubmitting(false);
         }
+    };
+
+    const handleCountrySelect = (item: typeof countries[0]) => {
+        setForm({ ...form, country: item.name });
+        setCountryCode(`+${item.phone}`);
+        if (errors.country) validateField("country", item.name);
     };
 
     return (
@@ -125,6 +150,33 @@ const SignUp = () => {
                         error={errors.email}
                     />
 
+                    <View className="space-y-2 mt-7">
+                        <Text className="text-base text-gray-100 font-pmedium">Country</Text>
+                        <TouchableOpacity
+                            onPress={() => setShowCountryPicker(true)}
+                            className={`w-full h-16 px-4 bg-[#1C1C1E] rounded-2xl border-2 flex flex-row items-center ${errors.country ? 'border-red-500' : 'border-black-200 focus:border-secondary'}`}
+                        >
+                            <Text className={`flex-1 font-psemibold text-base ${form.country ? 'text-white' : 'text-gray-400'}`}>
+                                {form.country || "Select your country"}
+                            </Text>
+                        </TouchableOpacity>
+                        {errors.country && <Text className="text-red-500 text-sm font-pmedium">{errors.country}</Text>}
+                    </View>
+
+                    <FormField
+                        title="Phone Number"
+                        value={form.phone}
+                        handleChangeText={(e) => {
+                            setForm({ ...form, phone: e });
+                            if (errors.phone) validateField("phone", e);
+                        }}
+                        otherStyles="mt-7"
+                        keyboardType="phone-pad"
+                        onBlur={() => validateField("phone", form.phone)}
+                        error={errors.phone}
+                        prefix={countryCode}
+                    />
+
                     <FormField
                         title="Password"
                         value={form.password}
@@ -161,6 +213,12 @@ const SignUp = () => {
                     </View>
                 </View>
             </ScrollView>
+
+            <CountryPicker
+                visible={showCountryPicker}
+                onClose={() => setShowCountryPicker(false)}
+                onSelect={handleCountrySelect}
+            />
         </SafeAreaView>
     );
 };

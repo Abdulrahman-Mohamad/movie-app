@@ -46,7 +46,7 @@ const Details = () => {
   }, [user, movie]);
 
   const toggleSave = async () => {
-    console.log("Attempting to save. User:", user, "Movie:", movie, "isSaving:", isSaving);
+
 
     if (!user) {
       Alert.alert("Error", "You must be logged in to save movies.");
