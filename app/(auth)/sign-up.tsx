@@ -118,7 +118,7 @@ const SignUp = () => {
                     <Image
                         source={icons.logo}
                         resizeMode="contain"
-                        className="w-[115px] h-[34px]"
+                        className="w-[115px] h-[34px] mx-auto"
                     />
 
                     <Text className="text-2xl text-white text-semibold mt-10 font-psemibold">

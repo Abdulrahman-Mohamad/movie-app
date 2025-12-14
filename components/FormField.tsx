@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { KeyboardTypeOptions, Text, TextInput, View } from "react-native";
+import { KeyboardTypeOptions, Text, TextInput, TextInputProps, View } from "react-native";
 
-interface FormFieldProps {
+interface FormFieldProps extends TextInputProps {
     title: string;
     value: string;
     placeholder?: string;
@@ -27,7 +27,7 @@ const FormField = ({
         <View className={`space-y-2 ${otherStyles}`}>
             <Text className="text-base text-gray-100 font-medium font-pmedium">{title}</Text>
 
-            <View className={`w-full h-16 px-4 bg-[#1C1C1E] rounded-2xl border-2 flex flex-row items-center ${error ? 'border-red-500' : 'border-black-200 focus:border-secondary'}`}>
+            <View className={`w-full px-4 bg-[#1C1C1E] rounded-2xl border-2 flex flex-row items-center ${error ? 'border-red-500' : 'border-black-200 focus:border-secondary'} ${props.multiline ? 'h-32 items-start py-4' : 'h-16'}`}>
                 {prefix && (
                     <Text className="text-white font-psemibold text-base mr-2">{prefix}</Text>
                 )}

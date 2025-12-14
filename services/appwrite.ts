@@ -1,9 +1,10 @@
-import { Account, Avatars, Client, Databases, ID, Query } from 'react-native-appwrite';
+import { Account, Avatars, Client, Databases, ID, Query, Storage } from 'react-native-appwrite';
 
 const DATABASE_ID = process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!;
 const COLLECTION_ID = process.env.EXPO_PUBLIC_APPWRITE_COLLECTION_ID!;
 const USER_COLLECTION_ID = process.env.EXPO_PUBLIC_APPWRITE_USER_COLLECTION_ID || 'users';
 const SAVED_MOVIES_COLLECTION_ID = process.env.EXPO_PUBLIC_APPWRITE_SAVED_MOVIES_COLLECTION_ID || 'saved_movies';
+const STORAGE_ID = process.env.EXPO_PUBLIC_APPWRITE_STORAGE_ID!
 
 const client = new Client()
   .setEndpoint('https://cloud.appwrite.io/v1')
@@ -12,6 +13,7 @@ const client = new Client()
 const database = new Databases(client)
 const account = new Account(client)
 const avatars = new Avatars(client)
+const storage = new Storage(client)
 
 export const createUser = async (email: string, password: string, username: string, phone: string, country: string) => {
   try {
@@ -38,6 +40,84 @@ export const createUser = async (email: string, password: string, username: stri
     );
 
     return newUser;
+  } catch (error) {
+    console.log(error);
+    throw new Error(error as string);
+  }
+}
+
+export const uploadFile = async (file: any, type: 'image' | 'video' | 'audio') => {
+  if (!file) return;
+
+  const asset = {
+    name: file.fileName,
+    type: file.mimeType,
+    size: file.fileSize,
+    uri: file.uri,
+  };
+
+  try {
+    const uploadedFile = await storage.createFile(
+      STORAGE_ID,
+      ID.unique(),
+      asset
+    );
+
+    const fileUrl = await getFilePreview(uploadedFile.$id, type);
+    return fileUrl;
+  } catch (error) {
+    throw new Error(error as string);
+  }
+}
+
+export const deleteFile = async (fileId: string) => {
+  try {
+    await storage.deleteFile(STORAGE_ID, fileId);
+    return true;
+  } catch (error) {
+    console.log("Error deleting file:", error);
+    return false;
+  }
+}
+
+export const getFilePreview = async (fileId: string, type: string) => {
+  let fileUrl;
+
+  try {
+    if (type === 'video') {
+      fileUrl = storage.getFileView(STORAGE_ID, fileId);
+    } else if (type === 'image') {
+      fileUrl = storage.getFileView(STORAGE_ID, fileId);
+    } else {
+      throw new Error('Invalid file type');
+    }
+
+    if (!fileUrl) throw Error;
+
+    // Manually construct the URL since SDK returns unusable object
+    const urlString = `https://cloud.appwrite.io/v1/storage/buckets/${STORAGE_ID}/files/${fileId}/view?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}`;
+
+    return urlString;
+  } catch (error) {
+    throw new Error(error as string);
+  }
+}
+
+export const updateUser = async (documentId: string, username: string, phone: string, country: string, bio: string, avatar?: string) => {
+  try {
+    const updatedUser = await database.updateDocument(
+      DATABASE_ID,
+      USER_COLLECTION_ID,
+      documentId,
+      {
+        username,
+        phone,
+        country,
+        bio,
+        avatar
+      }
+    );
+    return updatedUser;
   } catch (error) {
     console.log(error);
     throw new Error(error as string);

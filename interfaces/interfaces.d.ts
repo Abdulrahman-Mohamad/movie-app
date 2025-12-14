@@ -82,4 +82,7 @@ interface User {
   email: string;
   avatar: string;
   accountId: string;
+  bio?: string;
+  phone?: string;
+  country?: string;
 }
