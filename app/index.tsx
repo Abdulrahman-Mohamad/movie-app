@@ -44,7 +44,7 @@ export default function App() {
                         containerStyles="w-full mt-7"
                     />
 
-                    <Text className="mt-20">This app Developed by <Link className="text-blue-700 font-semibold" href={"https://portfolio-zeta-three.vercel.app/"} target="_blank">Abdulrahman Mohamed</Link></Text>
+                    <Text className="mt-20 text-white">This app Developed by <Link className="text-blue-700 font-semibold" href={"https://portfolio-zeta-three.vercel.app/"} target="_blank">Abdulrahman Mohamed</Link></Text>
                 </View>
             </ScrollView>
 

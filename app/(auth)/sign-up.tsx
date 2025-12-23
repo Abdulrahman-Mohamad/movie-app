@@ -206,7 +206,7 @@ const SignUp = () => {
                         </Text>
                         <Link
                             href="/sign-in"
-                            className="text-lg font-psemibold text-secondary"
+                            className="text-lg font-psemibold text-gray-100"
                         >
                             Login
                         </Link>
